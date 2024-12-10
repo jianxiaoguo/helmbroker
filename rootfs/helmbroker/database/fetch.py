@@ -7,6 +7,10 @@ import glob
 import shutil
 import tempfile
 import collections
+import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def fetch_addons(repository):
@@ -41,11 +45,17 @@ def fetch_chart_plan(addon_id, chart_path, plan_id, plan_path):
     addon_plan = [plan for plan in addon_meta['plans'] if plan['id'] == plan_id][0]
     temp = tempfile.TemporaryDirectory()
     try:
+        logger.debug(f"*** provision instance instance_id, fetch_chart_plan 1")
         _fetch_addon(addon_meta['url'], temp.name)
+        logger.debug(f"*** provision instance instance_id, fetch_chart_plan 2")
         shutil.rmtree(chart_path, ignore_errors=True)
+        logger.debug(f"*** provision instance instance_id, rmtree 1")
         shutil.rmtree(plan_path, ignore_errors=True)
+        logger.debug(f"*** provision instance instance_id, copytree 1")
         shutil.copytree(os.path.join(temp.name, "chart", addon_meta["name"]), chart_path)
+        logger.debug(f"*** provision instance instance_id, copytree 2")
         shutil.copytree(os.path.join(temp.name, "plans", addon_plan['name']), plan_path)
+        logger.debug(f"*** provision instance instance_id, copytree 3")
     finally:
         temp.cleanup()
 

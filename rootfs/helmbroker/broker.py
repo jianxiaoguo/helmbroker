@@ -47,12 +47,16 @@ class HelmServiceBroker(ServiceBroker):
         instance_path = get_instance_path(instance_id)
         if os.path.exists(instance_path):
             raise ErrInstanceAlreadyExists()
+        logger.debug(f"*** provision instance {instance_id}, async_allowed")
         if not async_allowed:
             raise ErrAsyncRequired()
+        logger.debug(f"*** provision instance {instance_id}, get_addon_archive")
         if get_addon_archive(details.service_id):
             raise ErrBadRequest(
                 msg="This addon has archived.")
+        logger.debug(f"*** provision instance {instance_id}, allow_params")
         allow_params = get_addon_allow_params(details.service_id)
+        logger.debug(f"*** provision instance {instance_id}, verify_parameters")
         not_allow_keys, required_keys = verify_parameters(
             allow_params, details.parameters)
         if not_allow_keys:
@@ -61,10 +65,14 @@ class HelmServiceBroker(ServiceBroker):
         if required_keys:
             raise ErrBadRequest(
                 msg="required parameters %s not exists" % required_keys)
+        logger.debug(f"*** provision instance {instance_id}, makedirs")
         os.makedirs(instance_path, exist_ok=True)
         chart_path, plan_path = get_chart_path(instance_id), get_plan_path(instance_id)
+        logger.debug(f"*** provision instance {instance_id}, get_chart_path")
         fetch_chart_plan(details.service_id, chart_path, details.plan_id, plan_path)
+        logger.debug(f"*** provision instance {instance_id}, fetch_chart_plan")
         provision.delay(instance_id, details)
+        logger.debug(f"*** provision instance {instance_id}, provision delay")
         return ProvisionedServiceSpec(state=ProvisionState.IS_ASYNC)
 
     def get_binding(self,
